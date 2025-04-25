@@ -1,5 +1,5 @@
 import {inject, Injectable} from '@angular/core';
-import {catchError, concatMap, map, mergeMap, Observable, of, switchMap, tap} from "rxjs";
+import {catchError, concatMap, map, mergeMap, Observable, of, shareReplay, switchMap, tap} from "rxjs";
 import {Product} from "./product";
 import {HttpClient} from "@angular/common/http";
 import {HttpErrorService} from "../utilities/http-error.service";
@@ -15,13 +15,12 @@ export class ProductService {
 
   private productsUrl = 'api/products';
 
-  getProducts(): Observable<Product[]> {
-    return this.#http.get<Product[]>(this.productsUrl)
-      .pipe(
-        tap(data => console.log(data)),
-        catchError(err => this.handleError(err))
-      );
-  }
+  readonly product$ = this.#http.get<Product[]>(this.productsUrl)
+    .pipe(
+      tap(data => console.log(JSON.stringify(data))),
+      shareReplay(1),
+      catchError(err => this.handleError(err))
+    );
 
   getProductById(id: number): Observable<Product | undefined> {
     const productUrl = `${this.productsUrl}/${id}`;
@@ -34,7 +33,7 @@ export class ProductService {
       );
   }
 
-  getProductWithReviews(product:Product): Observable<Product> {
+  getProductWithReviews(product: Product): Observable<Product> {
     if (product.hasReviews) {
       return this.#reviewService.getReviews(product.id).pipe(
         map(reviews => ({...product, reviews}))
