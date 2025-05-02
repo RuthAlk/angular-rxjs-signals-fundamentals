@@ -17,20 +17,13 @@ export class ProductListComponent  {
   errorMessage = '';
 
   readonly #productService = inject(ProductService)
-  readonly products$ = this.#productService.product$
-    .pipe(
-      catchError((err) => {
-        this.errorMessage = err;
-        return [];
-      }));
+  readonly selectedProductId = this.#productService.selectedProductId
 
-
-  // Selected product id to highlight the entry
-  selectedProductId: number = 0;
+  readonly products = this.#productService.products
 
   onSelected(productId: number): void {
     console.log("selected product id: ", productId);
-    this.selectedProductId = productId;
+    this.#productService.selectProduct(productId);
   }
 
 }
